@@ -154,7 +154,7 @@ module Postal
             result.type = "SoftFail"
             result.retry = true
             result.details = "No SMTP servers were available for #{@domain}. Tried #{@hostnames.to_sentence}"
-            result.output = @connection_errors.join(", ")
+            result.output = @connection_errors.join(", ").to_s.dup.force_encoding("UTF-8").scrub.truncate(512)
             result.connect_error = true
             return result
           else
@@ -174,14 +174,14 @@ module Postal
         if @smtp_client.source_address
           result.details += " (from #{@smtp_client.source_address})"
         end
-        result.output = smtp_result.string
+        result.output = smtp_result.string.to_s.dup.force_encoding("UTF-8").scrub.truncate(512)
         log "Message sent ##{message.id} to #{destination_host_description} for #{rcpt_to}"
       rescue Net::SMTPServerBusy, Net::SMTPAuthenticationError, Net::SMTPSyntaxError, Net::SMTPUnknownError, Net::ReadTimeout => e
         log "#{e.class}: #{e.message}"
         result.type = "SoftFail"
         result.retry = true
         result.details = "Temporary SMTP delivery error when sending to #{destination_host_description}"
-        result.output = e.message
+        result.output = e.message.to_s.dup.force_encoding("UTF-8").scrub.truncate(512)
         if e.to_s =~ /(\d+) seconds/
           result.retry = ::Regexp.last_match(1).to_i + 10
         elsif e.to_s =~ /(\d+) minutes/
@@ -193,7 +193,7 @@ module Postal
         log "#{e.class}: #{e.message}"
         result.type = "HardFail"
         result.details = "Permanent SMTP delivery error when sending to #{destination_host_description}"
-        result.output = e.message
+        result.output = e.message.to_s.dup.force_encoding("UTF-8").scrub.truncate(512)
         safe_rset
       rescue StandardError => e
         log "#{e.class}: #{e.message}"
@@ -203,7 +203,7 @@ module Postal
         result.type = "SoftFail"
         result.retry = true
         result.details = "An error occurred while sending the message to #{destination_host_description}"
-        result.output = e.message
+        result.output = e.message.to_s.dup.force_encoding("UTF-8").scrub.truncate(512)
         safe_rset
       end
 
