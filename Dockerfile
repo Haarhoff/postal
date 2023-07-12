@@ -19,7 +19,7 @@ RUN apt-get update && \
   nodejs
 
 RUN setcap 'cap_net_bind_service=+ep' /usr/local/bin/ruby
-
+RUN sed -i -e "s/DEFAULT@SECLEVEL=2/DEFAULT@SECLEVEL=1/" /etc/ssl/openssl.cnf
 # Configure 'postal' to work everywhere (when the binary exists
 # later in this process)
 ENV PATH="/opt/postal/app/bin:${PATH}"
